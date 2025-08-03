@@ -52,12 +52,38 @@
       <form @submit.prevent="handleSubmit">
         <div class="row">
           <div class="col-sm">
-            <label for="tenSach">Tên Sách:</label>
-            <input v-model="currentBook.tenSach" type="text" id="tenSach" required />
+            <label for="maSach">Mã Sách: <span class="required">*</span></label>
+            <input 
+              v-model="currentBook.maSach" 
+              type="text" 
+              id="maSach" 
+              :class="{ 'error': errors.maSach }"
+              @blur="validateField('maSach')"
+              required 
+            />
+            <span v-if="errors.maSach" class="error-message">{{ errors.maSach }}</span>
           </div>
           <div class="col-sm">
-            <label for="loaiSach">Loại Sách:</label>
-            <select v-model="currentBook.loaiSach" type="text" id="loaiSach" required>
+            <label for="tenSach">Tên Sách: <span class="required">*</span></label>
+            <input 
+              v-model="currentBook.tenSach" 
+              type="text" 
+              id="tenSach" 
+              :class="{ 'error': errors.tenSach }"
+              @blur="validateField('tenSach')"
+              required 
+            />
+            <span v-if="errors.tenSach" class="error-message">{{ errors.tenSach }}</span>
+          </div>
+          <div class="col-sm">
+            <label for="loaiSach">Loại Sách: <span class="required">*</span></label>
+            <select 
+              v-model="currentBook.loaiSach" 
+              id="loaiSach" 
+              :class="{ 'error': errors.loaiSach }"
+              @change="validateField('loaiSach')"
+              required
+            >
               <option value="">Chọn thể loại sách</option>
               <option value="Văn học">Văn học</option>
               <option value="Kinh tế">Kinh tế</option>
@@ -65,46 +91,111 @@
               <option value="Kỹ năng sống">Kỹ năng sống</option>
               <option value="Truyện thiếu nhi">Truyện thiếu nhi</option>
             </select>
+            <span v-if="errors.loaiSach" class="error-message">{{ errors.loaiSach }}</span>
           </div>
         </div>
 
         <div class="row">
           <div class="col-sm">
-            <label for="tacGia">Tác giả:</label>
-            <input v-model="currentBook.tacGia" type="text" id="tacGia" required />
+            <label for="tacGia">Tác giả: <span class="required">*</span></label>
+            <input 
+              v-model="currentBook.tacGia" 
+              type="text" 
+              id="tacGia" 
+              :class="{ 'error': errors.tacGia }"
+              @blur="validateField('tacGia')"
+              required 
+            />
+            <span v-if="errors.tacGia" class="error-message">{{ errors.tacGia }}</span>
           </div>
           <div class="col-sm">
-            <label for="tenNXB">Tên NXB:</label>
-            <input v-model="currentBook.tenNXB" type="text" id="tenNXB" required />
+            <label for="tenNXB">Tên NXB: <span class="required">*</span></label>
+            <input 
+              v-model="currentBook.tenNXB" 
+              type="text" 
+              id="tenNXB" 
+              :class="{ 'error': errors.tenNXB }"
+              @blur="validateField('tenNXB')"
+              required 
+            />
+            <span v-if="errors.tenNXB" class="error-message">{{ errors.tenNXB }}</span>
           </div>
         </div>
         
         <div class="row">
           <div class="col-sm">
-            <label for="namXuatBan">Năm xuất bản:</label>
-            <input v-model="currentBook.namXuatBan" type="text" id="namXuatBan" required />
+            <label for="namXuatBan">Năm xuất bản: <span class="required">*</span></label>
+            <input 
+              v-model="currentBook.namXuatBan" 
+              type="number" 
+              id="namXuatBan" 
+              :class="{ 'error': errors.namXuatBan }"
+              @blur="validateField('namXuatBan')"
+              min="1900" 
+              :max="new Date().getFullYear() + 1"
+              required 
+            />
+            <span v-if="errors.namXuatBan" class="error-message">{{ errors.namXuatBan }}</span>
           </div>
           <div class="col-sm">
-            <label for="donGia">Đơn giá:</label>
-            <input v-model="currentBook.donGia" type="text" id="donGia" required />
+            <label for="donGia">Đơn giá (VNĐ): <span class="required">*</span></label>
+            <input 
+              v-model="currentBook.donGia" 
+              type="number" 
+              id="donGia" 
+              :class="{ 'error': errors.donGia }"
+              @blur="validateField('donGia')"
+              min="0" 
+              max="10000000"
+              step="100"
+              required 
+            />
+            <span v-if="errors.donGia" class="error-message">{{ errors.donGia }}</span>
           </div>
         </div>
 
         <div class="row">
           <div class="col-sm">
-            <label for="hinhAnh">Hình ảnh:</label>
-            <input v-model="currentBook.chiTiet.hinhAnh" type="text" id="hinhAnh" required />
+            <label for="hinhAnh">Hình ảnh (URL):</label>
+            <input 
+              v-model="currentBook.chiTiet.hinhAnh" 
+              type="url" 
+              id="hinhAnh" 
+              :class="{ 'error': errors['chiTiet.hinhAnh'] }"
+              @blur="validateField('chiTiet.hinhAnh')"
+              placeholder="https://example.com/image.jpg"
+            />
+            <span v-if="errors['chiTiet.hinhAnh']" class="error-message">{{ errors['chiTiet.hinhAnh'] }}</span>
           </div>
           <div class="col-sm">
             <label for="moTa">Mô tả:</label>
-            <input v-model="currentBook.chiTiet.chiTiet" type="text" id="moTa" required />
+            <textarea 
+              v-model="currentBook.chiTiet.moTa" 
+              id="moTa" 
+              :class="{ 'error': errors['chiTiet.moTa'] }"
+              @blur="validateField('chiTiet.moTa')"
+              maxlength="1000"
+              rows="3"
+              placeholder="Mô tả về sách..."
+            ></textarea>
+            <span v-if="errors['chiTiet.moTa']" class="error-message">{{ errors['chiTiet.moTa'] }}</span>
           </div>
         </div>
 
         <div class="row">
           <div class="col-sm">
-            <label for="soQuyen">Số quyển:</label>
-            <input v-model="currentBook.soQuyen" type="number" id="soQuyen" required />
+            <label for="soQuyen">Số quyển: <span class="required">*</span></label>
+            <input 
+              v-model="currentBook.soQuyen" 
+              type="number" 
+              id="soQuyen" 
+              :class="{ 'error': errors.soQuyen }"
+              @blur="validateField('soQuyen')"
+              min="1" 
+              max="1000"
+              required 
+            />
+            <span v-if="errors.soQuyen" class="error-message">{{ errors.soQuyen }}</span>
           </div>
           <div class="col-sm">
             <button type="submit">Lưu</button>
@@ -119,6 +210,7 @@
 
 <script>
 import BookService from "@/services/BookService";
+import BookValidation from "@/utils/validation.js";
 import axios from "axios";
 
 export default {
@@ -132,11 +224,17 @@ export default {
         tenSach: "",
         loaiSach: "",
         tacGia: "",
-
         namXuatBan: "",
         donGia: "",
         soQuyen: "",
+        tenNXB: "",
+        chiTiet: {
+          hinhAnh: "",
+          moTa: "",
+        },
       },
+      errors: {},
+      isFormValid: false,
     };
   },
   methods: {
@@ -151,6 +249,7 @@ export default {
     showAddBookModal() {
       this.modalType = "add";
       this.resetCurrentBook();
+      this.clearErrors();
       this.isModalOpen = true;
     },
     showEditBookModal(book) {
@@ -162,24 +261,85 @@ export default {
           ...book.chiTiet
         }, 
       };
+      this.clearErrors();
       this.isModalOpen = true;
     },
+    validateField(fieldName) {
+      const value = BookValidation.getNestedValue(this.currentBook, fieldName);
+      const validation = BookValidation.validateField(fieldName, value);
+      
+      if (validation.isValid) {
+        this.$delete(this.errors, fieldName);
+      } else {
+        this.$set(this.errors, fieldName, validation.message);
+      }
+      
+      this.updateFormValidity();
+    },
+    
+    validateAllFields() {
+      const validation = BookValidation.validateAll(this.currentBook);
+      this.errors = validation.errors;
+      this.isFormValid = validation.isValid;
+    },
+    
+    updateFormValidity() {
+      const validation = BookValidation.validateAll(this.currentBook);
+      this.isFormValid = validation.isValid;
+    },
+    
+    clearErrors() {
+      this.errors = {};
+      this.isFormValid = false;
+    },
+    
     async handleSubmit() {
+      this.validateAllFields();
+      
+      if (!this.isFormValid) {
+        // Show validation errors in the form instead of alert
+        console.log('Form has validation errors:', this.errors);
+        return;
+      }
+      
       try {
+        // Sanitize data before submission
+        const bookData = BookValidation.sanitizeData(this.currentBook);
+        
         if (this.modalType === "add") {
-          await BookService.create(this.currentBook);
-          alert("Thêm sách thành công!");
+          const response = await BookService.create(bookData);
+          if (response.data.message) {
+            alert(response.data.message);
+          } else {
+            alert("Thêm sách thành công!");
+          }
         } else {
-          await BookService.update(this.currentBook._id, this.currentBook);
-          alert("Sửa sách thành công!");
+          const response = await BookService.update(this.currentBook._id, bookData);
+          if (response.data.message) {
+            alert(response.data.message);
+          } else {
+            alert("Sửa sách thành công!");
+          }
         }
         this.closeModal();
         this.fetchBooks();
       } catch (error) {
         console.error("Lỗi khi lưu sách:", error);
-        alert("Có lỗi khi lưu sách!");
+        
+        // Handle validation errors from backend
+        if (error.response && error.response.data && error.response.data.errors) {
+          const backendErrors = error.response.data.errors;
+          if (Array.isArray(backendErrors)) {
+            alert('Lỗi validation:\n' + backendErrors.join('\n'));
+          } else {
+            alert('Lỗi: ' + error.response.data.message);
+          }
+        } else {
+          alert("Có lỗi khi lưu sách!");
+        }
       }
     },
+    
     async deleteBook(id) {
       if (confirm("Bạn có chắc chắn muốn xóa sách này?")) {
         try {
@@ -188,13 +348,17 @@ export default {
           this.fetchBooks();
         } catch (error) {
           console.error("Lỗi khi xóa sách:", error);
+          alert("Có lỗi khi xóa sách!");
         }
       }
     },
+    
     closeModal() {
       this.isModalOpen = false;
       this.resetCurrentBook();
+      this.clearErrors();
     },
+    
     resetCurrentBook() {
       this.currentBook = {
         maSach: "",
@@ -206,7 +370,7 @@ export default {
         soQuyen: "",
         tenNXB: "",
         chiTiet: {
-          hinhAnh: [],
+          hinhAnh: "",
           moTa: "",
         },
       };
@@ -337,7 +501,53 @@ table td:last-child button:last-of-type {
   padding: 10px;
   background-color: #F1F1F1;
   border-radius: 5px;
-  border: none;
+  border: 1px solid #ddd;
+  transition: border-color 0.3s ease;
+}
+
+.modal-content input:focus, select:focus {
+  outline: none;
+  border-color: #225771;
+  background-color: #fff;
+}
+
+.modal-content input.error, select.error {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.modal-content textarea {
+  width: 100%;
+  padding: 10px;
+  background-color: #F1F1F1;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.3s ease;
+}
+
+.modal-content textarea:focus {
+  outline: none;
+  border-color: #225771;
+  background-color: #fff;
+}
+
+.modal-content textarea.error {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.required {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
 }
 
 .col-sm button {
@@ -351,10 +561,18 @@ table td:last-child button:last-of-type {
   margin-top: 26px;
   margin-right: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
-.col-sm button:hover {
+
+.col-sm button:hover:not(:disabled) {
   background: #FFDCE2;
   color: #225771;
+}
+
+.col-sm button:disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
 }
 
 
