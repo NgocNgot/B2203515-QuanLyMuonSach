@@ -17,8 +17,10 @@ const NXBController = {
         const { diaChi, tenNXB } = req.body;
 
         try {
-            // Kiểm tra trùng tên NXB
-            const existingNXB = await NXBModel.findOne({ tenNXB });
+            // Kiểm tra trùng tên NXB (không phân biệt hoa thường)
+            const existingNXB = await NXBModel.findOne({ 
+                tenNXB: { $regex: new RegExp(`^${tenNXB}$`, 'i') }
+            });
             if (existingNXB) {
                 return res.status(400).json({ message: "Tên nhà xuất bản đã tồn tại!" });
             }
@@ -74,6 +76,36 @@ const NXBController = {
         } catch (err) {
             console.error("Lỗi khi xóa NXB:", err);
             res.status(500).json({ message: `Không thể xóa: ${err.message}` });
+        }
+    },
+
+    // Tìm hoặc tạo NXB (dùng cho BookController)
+    findOrCreateNXB: async (tenNXB) => {
+        try {
+            // Tìm NXB theo tên (không phân biệt hoa thường)
+            let nxb = await NXBModel.findOne({ 
+                tenNXB: { $regex: new RegExp(`^${tenNXB}$`, 'i') }
+            });
+
+            if (!nxb) {
+                // Tạo NXB mới nếu không tìm thấy
+                const nxbRandomId = Math.floor(100 + Math.random() * 900);
+                const maNXB = `NXB${nxbRandomId}`;
+                
+                nxb = await NXBModel.create({
+                    maNXB: maNXB,
+                    tenNXB: tenNXB.trim(),
+                    diaChi: "Chưa cập nhật",
+                });
+                console.log(`Đã tạo NXB mới: ${maNXB} - ${tenNXB}`);
+            } else {
+                console.log(`Sử dụng NXB hiện tại: ${nxb.maNXB} - ${nxb.tenNXB}`);
+            }
+
+            return nxb;
+        } catch (err) {
+            console.error("Lỗi khi tìm hoặc tạo NXB:", err);
+            throw err;
         }
     },
 };

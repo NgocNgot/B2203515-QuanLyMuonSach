@@ -9,7 +9,6 @@ const NXBSchema = new mongoose.Schema({
     tenNXB: {
         type: String,
         require: true,
-        unique: true,
     },
     diaChi: {
         type: String,

@@ -339,6 +339,11 @@ export default {
           } else {
             alert("Thêm sách thành công!");
           }
+          
+          // Hiển thị thông báo nếu NXB được tạo tự động
+          if (response.data && response.data.nxbCreated) {
+            alert(`Đã tự động tạo nhà xuất bản mới: ${response.data.nxbCreated.tenNXB} (${response.data.nxbCreated.maNXB})`);
+          }
         } else {
           console.log('Updating book...');
           const response = await BookService.update(this.currentBook._id, bookData);

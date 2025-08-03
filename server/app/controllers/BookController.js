@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const BookModel = require("../models/BookModel");
 const NXBModel = require("../models/NXBModel");
+const NXBController = require("./NXBController");
 const BookController = {
     findAll: async (req, res) => {
         console.log("Received request to fetch all books");
@@ -199,15 +200,8 @@ const BookController = {
             const maSach = `${prefix}${randomId}`;
 
             //Kiểm tra hoặc tạo mới nxb
-            let nxb = await NXBModel.findOne({ tenNXB });
-            if (!nxb) {
-                console.log("Nhà xuất bản không tồn tại, tạo mới.");
-                nxb = await NXBModel.create({
-                    maNXB: `NXB${randomId}`,
-                    tenNXB: tenNXB,
-                    diaChi: "Địa chỉ chưa được cập nhật.",
-                });
-            }
+            let nxb = await NXBController.findOrCreateNXB(tenNXB);
+            let nxbCreated = null;
 
             const newBook = await BookModel.create({
                 maSach: maSach,
@@ -223,7 +217,21 @@ const BookController = {
                     moTa: chiTiet.moTa || "",
                 }
             });
-            res.status(200).json({ message: "Sách mới đã được tạo thành công!", data: newBook });
+
+            // Kiểm tra xem NXB có phải vừa được tạo không
+            const nxbCheck = await NXBModel.findById(nxb._id);
+            if (nxbCheck && nxbCheck.diaChi === "Chưa cập nhật") {
+                nxbCreated = {
+                    maNXB: nxbCheck.maNXB,
+                    tenNXB: nxbCheck.tenNXB
+                };
+            }
+
+            res.status(200).json({ 
+                message: "Sách mới đã được tạo thành công!", 
+                data: newBook,
+                nxbCreated: nxbCreated
+            });
         } catch (err) {
             // Xử lý lỗi và trả về phản hồi lỗi
             console.error("Lỗi khi tạo sách:", err);
