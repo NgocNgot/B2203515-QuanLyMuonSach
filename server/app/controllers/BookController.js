@@ -104,28 +104,7 @@ const BookController = {
         if (!name) {
             return res.status(400).json({ message: "Vui lòng cung cấp từ khóa tìm kiếm." });
         }
-        
         try {
-            // Split search terms and create progressive search patterns
-            const searchTerms = name.trim().split(/\s+/).filter(term => term.length > 0);
-            
-            // If no valid search terms, return empty results
-            if (searchTerms.length === 0) {
-                return res.status(200).json([]);
-            }
-            
-            // Create progressive search patterns
-            const progressivePatterns = [];
-            for (let i = 0; i < searchTerms.length; i++) {
-                const progressiveTerm = searchTerms.slice(0, i + 1).join(' ');
-                const escapedTerm = progressiveTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                progressivePatterns.push({
-                    pattern: new RegExp(escapedTerm, 'i'),
-                    term: progressiveTerm,
-                    priority: searchTerms.length - i // Higher priority for longer matches
-                });
-            }
-            
             const data = await BookModel.aggregate([
                 {
                     $lookup: {
@@ -141,50 +120,11 @@ const BookController = {
                 {
                     $match: {
                         $or: [
-                            // Progressive phrase matching
-                            ...progressivePatterns.map(({ pattern }) => ({ tenSach: pattern })),
-                            ...progressivePatterns.map(({ pattern }) => ({ tacGia: pattern })),
-                            ...progressivePatterns.map(({ pattern }) => ({ "nxbDetails.tenNXB": pattern })),
+                            { tenSach: { $regex: name, $options: "i" } },
+                            { tacGia: { $regex: name, $options: "i" } },
+                            { "nxbDetails.tenNXB": { $regex: name, $options: "i" } },
                         ],
                     },
-                },
-                {
-                    $addFields: {
-                        searchScore: {
-                            $sum: [
-                                // Progressive matching with priority scoring
-                                ...progressivePatterns.map(({ pattern, priority }) => ({
-                                    $cond: [
-                                        { $regexMatch: { input: "$tenSach", regex: pattern.source, options: "i" } },
-                                        priority * 100,
-                                        0
-                                    ]
-                                })),
-                                ...progressivePatterns.map(({ pattern, priority }) => ({
-                                    $cond: [
-                                        { $regexMatch: { input: "$tacGia", regex: pattern.source, options: "i" } },
-                                        priority * 80,
-                                        0
-                                    ]
-                                })),
-                                ...progressivePatterns.map(({ pattern, priority }) => ({
-                                    $cond: [
-                                        { $regexMatch: { input: "$nxbDetails.tenNXB", regex: pattern.source, options: "i" } },
-                                        priority * 60,
-                                        0
-                                    ]
-                                }))
-                            ]
-                        }
-                    }
-                },
-                {
-                    $match: {
-                        searchScore: { $gt: 0 }
-                    }
-                },
-                {
-                    $sort: { searchScore: -1 }
                 },
                 {
                     $project: {
@@ -197,7 +137,6 @@ const BookController = {
                         donGia: 1,
                         soQuyen: 1,
                         chiTiet: 1,
-                        searchScore: 1,
                     },
                 },
             ]);

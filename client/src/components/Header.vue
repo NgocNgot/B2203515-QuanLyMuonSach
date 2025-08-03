@@ -54,18 +54,10 @@
                 <a class="nav-link" href="#" :class="{ 'text-pink': isActive === 'news' }" @click="isActive = 'news'">Tin tức</a>
               </li>
             </ul>
-            <div class="header-search">
-              <input 
-                v-model="searchQuery" 
-                @keyup.enter="handleSearch"
-                class="header-search-input" 
-                type="text" 
-                placeholder="Tìm kiếm sách..."
-              >
-              <button @click="handleSearch" class="header-search-button">
-                <i class="fas fa-search"></i>
-              </button>
-            </div>
+            <form class="d-flex" @submit.prevent="handleSearch">
+              <input v-model="searchQuery" class="form-control me-2" type="text" placeholder="Tìm kiếm sách" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Tìm kiếm</button>
+            </form>
           </div>
         </div>
       </nav>
@@ -149,49 +141,9 @@ a {
   color: #225771;
 }
 
-/* Header Search Styles */
-.header-search {
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 20px;
-  padding: 5px;
-  margin-left: 15px;
-}
-
-.header-search-input {
-  border: none;
-  outline: none;
-  padding: 8px 12px;
-  font-size: 14px;
-  background: transparent;
+input {
   width: 200px;
-  color: #333;
 }
-
-.header-search-input::placeholder {
-  color: #999;
-}
-
-.header-search-button {
-  background: #225771;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: white;
-  transition: background-color 0.3s ease;
-}
-
-.header-search-button:hover {
-  background: #1a4a5f;
-}
-
-/* Original button styles for other buttons */
 button {
   border: 1.5px solid #fff;
   color: #fff;
