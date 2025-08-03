@@ -8,5 +8,6 @@ BookRouter.get('/', BookController.findAll);
 BookRouter.post("/create", BookController.createBook);
 BookRouter.put('/update/:id', BookController.updateBook);
 BookRouter.delete("/delete/:id", BookController.delete);
+BookRouter.post("/check-duplicate", BookController.checkDuplicate);
 
 module.exports = BookRouter;

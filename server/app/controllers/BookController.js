@@ -168,7 +168,9 @@ const BookController = {
     },
 
     createBook: async (req, res) => {
+        console.log("=== CREATE BOOK REQUEST ===");
         console.log("Request body:", req.body);
+        console.log("Request headers:", req.headers);
         const { tenSach, loaiSach, tacGia, namXuatBan, donGia, soQuyen, tenNXB, chiTiet = {} } = req.body;
         let prefix = 'VH';
         try {
@@ -244,6 +246,33 @@ const BookController = {
         } catch (err) {
             console.error('Lỗi khi cập nhật sách:', err);
             res.status(500).json({ message: "Lỗi khi cập nhật sách!!!", error: err.message });
+        }
+    },
+
+    checkDuplicate: async (req, res) => {
+        const { tenSach, tacGia, currentBookId } = req.body;
+        
+        try {
+            // Tạo query để tìm sách trùng lặp
+            let query = {
+                tenSach: { $regex: new RegExp(`^${tenSach}$`, 'i') }, // Không phân biệt hoa thường
+                tacGia: { $regex: new RegExp(`^${tacGia}$`, 'i') }
+            };
+
+            // Nếu đang edit sách, loại trừ sách hiện tại
+            if (currentBookId) {
+                query._id = { $ne: currentBookId };
+            }
+
+            const existingBook = await BookModel.findOne(query);
+            
+            res.status(200).json({ 
+                isDuplicate: !!existingBook,
+                message: existingBook ? 'Sách này đã tồn tại trong hệ thống!' : ''
+            });
+        } catch (err) {
+            console.error('Lỗi khi kiểm tra sách trùng lặp:', err);
+            res.status(500).json({ message: "Lỗi khi kiểm tra sách trùng lặp!", error: err.message });
         }
     },
 }

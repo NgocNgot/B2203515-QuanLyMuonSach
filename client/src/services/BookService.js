@@ -17,7 +17,9 @@ class BookService {
     }
 
     async create(data) {
-        return (await this.api.post("/create", data)).data;
+        const response = await this.api.post("/create", data);
+        console.log('BookService create response:', response);
+        return response.data;
     }
 
     async update(id, data) {

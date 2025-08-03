@@ -10,7 +10,6 @@
     <table>
       <thead>
         <tr>
-          <th>Mã Sách</th>
           <th>Tên Sách</th>
           <th>Thể loại</th>
           <th>Tác giả</th>
@@ -24,7 +23,6 @@
       </thead>
       <tbody>
         <tr v-for="book in books" :key="book._id">
-          <td>{{ book.maSach }}</td>
           <td>{{ book.tenSach }}</td>
           <td>{{ book.loaiSach }}</td>
           <td>{{ book.tacGia }}</td>
@@ -52,18 +50,6 @@
       <form @submit.prevent="handleSubmit">
         <div class="row">
           <div class="col-sm">
-            <label for="maSach">Mã Sách: <span class="required">*</span></label>
-            <input 
-              v-model="currentBook.maSach" 
-              type="text" 
-              id="maSach" 
-              :class="{ 'error': errors.maSach }"
-              @blur="validateField('maSach')"
-              required 
-            />
-            <span v-if="errors.maSach" class="error-message">{{ errors.maSach }}</span>
-          </div>
-          <div class="col-sm">
             <label for="tenSach">Tên Sách: <span class="required">*</span></label>
             <input 
               v-model="currentBook.tenSach" 
@@ -71,6 +57,7 @@
               id="tenSach" 
               :class="{ 'error': errors.tenSach }"
               @blur="validateField('tenSach')"
+              @input="checkDuplicateOnInput"
               required 
             />
             <span v-if="errors.tenSach" class="error-message">{{ errors.tenSach }}</span>
@@ -104,6 +91,7 @@
               id="tacGia" 
               :class="{ 'error': errors.tacGia }"
               @blur="validateField('tacGia')"
+              @input="checkDuplicateOnInput"
               required 
             />
             <span v-if="errors.tacGia" class="error-message">{{ errors.tacGia }}</span>
@@ -121,7 +109,7 @@
             <span v-if="errors.tenNXB" class="error-message">{{ errors.tenNXB }}</span>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="col-sm">
             <label for="namXuatBan">Năm xuất bản: <span class="required">*</span></label>
@@ -156,34 +144,6 @@
 
         <div class="row">
           <div class="col-sm">
-            <label for="hinhAnh">Hình ảnh (URL):</label>
-            <input 
-              v-model="currentBook.chiTiet.hinhAnh" 
-              type="url" 
-              id="hinhAnh" 
-              :class="{ 'error': errors['chiTiet.hinhAnh'] }"
-              @blur="validateField('chiTiet.hinhAnh')"
-              placeholder="https://example.com/image.jpg"
-            />
-            <span v-if="errors['chiTiet.hinhAnh']" class="error-message">{{ errors['chiTiet.hinhAnh'] }}</span>
-          </div>
-          <div class="col-sm">
-            <label for="moTa">Mô tả:</label>
-            <textarea 
-              v-model="currentBook.chiTiet.moTa" 
-              id="moTa" 
-              :class="{ 'error': errors['chiTiet.moTa'] }"
-              @blur="validateField('chiTiet.moTa')"
-              maxlength="1000"
-              rows="3"
-              placeholder="Mô tả về sách..."
-            ></textarea>
-            <span v-if="errors['chiTiet.moTa']" class="error-message">{{ errors['chiTiet.moTa'] }}</span>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-sm">
             <label for="soQuyen">Số quyển: <span class="required">*</span></label>
             <input 
               v-model="currentBook.soQuyen" 
@@ -197,6 +157,41 @@
             />
             <span v-if="errors.soQuyen" class="error-message">{{ errors.soQuyen }}</span>
           </div>
+          <div class="col-sm">
+            <label for="hinhAnh">Hình ảnh (URL):</label>
+            <input 
+              v-model="currentBook.chiTiet.hinhAnh" 
+              type="url" 
+              id="hinhAnh" 
+              :class="{ 'error': errors['chiTiet.hinhAnh'] }"
+              @blur="validateField('chiTiet.hinhAnh')"
+              placeholder="https://example.com/image.jpg"
+            />
+            <span v-if="errors['chiTiet.hinhAnh']" class="error-message">{{ errors['chiTiet.hinhAnh'] }}</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm">
+            <label for="moTa">Mô tả:</label>
+            <textarea 
+              v-model="currentBook.chiTiet.moTa" 
+              id="moTa" 
+              :class="{ 'error': errors['chiTiet.moTa'] }"
+              @blur="validateField('chiTiet.moTa')"
+              @input="validateField('chiTiet.moTa')"
+              maxlength="1000"
+              rows="3"
+              placeholder="Mô tả về sách..."
+            ></textarea>
+            <div class="field-info">
+              <span v-if="errors['chiTiet.moTa']" class="error-message">{{ errors['chiTiet.moTa'] }}</span>
+              <span class="char-count">{{ currentBook.chiTiet.moTa ? currentBook.chiTiet.moTa.length : 0 }}/1000 ký tự</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
           <div class="col-sm">
             <button type="submit">Lưu</button>
             <button type="button" @click="closeModal">Hủy</button>
@@ -212,6 +207,7 @@
 import BookService from "@/services/BookService";
 import BookValidation from "@/utils/validation.js";
 import axios from "axios";
+import { reactive } from 'vue';
 
 export default {
   data() {
@@ -220,7 +216,6 @@ export default {
       isModalOpen: false,
       modalType: "add", // 'add' hoặc 'edit'
       currentBook: {
-        maSach: "",
         tenSach: "",
         loaiSach: "",
         tacGia: "",
@@ -233,7 +228,7 @@ export default {
           moTa: "",
         },
       },
-      errors: {},
+      errors: reactive({}),
       isFormValid: false,
     };
   },
@@ -264,37 +259,65 @@ export default {
       this.clearErrors();
       this.isModalOpen = true;
     },
-    validateField(fieldName) {
+    async validateField(fieldName) {
       const value = BookValidation.getNestedValue(this.currentBook, fieldName);
-      const validation = BookValidation.validateField(fieldName, value);
+      const validation = await BookValidation.validateField(fieldName, value, this.currentBook);
       
       if (validation.isValid) {
-        this.$delete(this.errors, fieldName);
+        delete this.errors[fieldName];
       } else {
-        this.$set(this.errors, fieldName, validation.message);
+        this.errors[fieldName] = validation.message;
       }
       
       this.updateFormValidity();
     },
     
-    validateAllFields() {
-      const validation = BookValidation.validateAll(this.currentBook);
+    async validateAllFields() {
+      const validation = await BookValidation.validateAll(this.currentBook);
       this.errors = validation.errors;
       this.isFormValid = validation.isValid;
     },
     
-    updateFormValidity() {
-      const validation = BookValidation.validateAll(this.currentBook);
+    async updateFormValidity() {
+      const validation = await BookValidation.validateAll(this.currentBook);
       this.isFormValid = validation.isValid;
     },
     
     clearErrors() {
-      this.errors = {};
+      Object.keys(this.errors).forEach(key => {
+        delete this.errors[key];
+      });
       this.isFormValid = false;
+    },
+
+    // Debounce function để tránh gọi API quá nhiều
+    debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    },
+
+    // Kiểm tra trùng lặp khi người dùng nhập
+    checkDuplicateOnInput: function() {
+      this.debouncedCheckDuplicate();
+    },
+
+    // Method thực tế để kiểm tra trùng lặp
+    async performDuplicateCheck() {
+      if (this.currentBook.tenSach && this.currentBook.tenSach.trim() && 
+          this.currentBook.tacGia && this.currentBook.tacGia.trim()) {
+        await this.validateField('tenSach');
+      }
     },
     
     async handleSubmit() {
-      this.validateAllFields();
+      await this.validateAllFields();
       
       if (!this.isFormValid) {
         // Show validation errors in the form instead of alert
@@ -305,18 +328,23 @@ export default {
       try {
         // Sanitize data before submission
         const bookData = BookValidation.sanitizeData(this.currentBook);
+        console.log('Submitting book data:', bookData);
         
         if (this.modalType === "add") {
+          console.log('Creating new book...');
           const response = await BookService.create(bookData);
-          if (response.data.message) {
-            alert(response.data.message);
+          console.log('Create response:', response);
+          if (response.message) {
+            alert(response.message);
           } else {
             alert("Thêm sách thành công!");
           }
         } else {
+          console.log('Updating book...');
           const response = await BookService.update(this.currentBook._id, bookData);
-          if (response.data.message) {
-            alert(response.data.message);
+          console.log('Update response:', response);
+          if (response.message) {
+            alert(response.message);
           } else {
             alert("Sửa sách thành công!");
           }
@@ -334,6 +362,8 @@ export default {
           } else {
             alert('Lỗi: ' + error.response.data.message);
           }
+        } else if (error.response && error.response.data && error.response.data.message) {
+          alert('Lỗi: ' + error.response.data.message);
         } else {
           alert("Có lỗi khi lưu sách!");
         }
@@ -361,7 +391,6 @@ export default {
     
     resetCurrentBook() {
       this.currentBook = {
-        maSach: "",
         tenSach: "",
         loaiSach: "",
         tacGia: "",
@@ -378,6 +407,8 @@ export default {
   },
   mounted() {
     this.fetchBooks();
+    // Khởi tạo debounced function
+    this.debouncedCheckDuplicate = this.debounce(this.performDuplicateCheck, 500);
   },
 };
 </script>
@@ -459,15 +490,17 @@ table td:last-child button:last-of-type {
   justify-content: center;
 }
 
-.container {
-  display: flex;
-  flex-direction: column;
-  font-size: 16px;
-  background-color: white;
-  padding: 8px 40px;
-  border-radius: 10px;
-  width: 60%;
-}
+ .container {
+   display: flex;
+   flex-direction: column;
+   font-size: 16px;
+   background-color: white;
+   padding: 8px 40px;
+   border-radius: 10px;
+   width: 40%;
+   max-width: 500px;
+   min-width: 400px;
+ }
 .title {
   color: #225771;
   font-weight: bold;
@@ -475,105 +508,204 @@ table td:last-child button:last-of-type {
   text-align: center;
   margin-bottom: 20px;
 }
-.row {
-  display: flex;
-  margin-bottom: 8px;
-}
+ .form-field {
+   margin-bottom: 16px;
+ }
+ 
+ .form-field label {
+   display: block;
+   margin-bottom: 4px;
+   color: #000;
+   font-weight: 500;
+ }
+ 
+ .form-field input, 
+ .form-field select {
+   width: 100%;
+   height: 40px;
+   padding: 10px;
+   background-color: #F1F1F1;
+   border-radius: 5px;
+   border: 1px solid #ddd;
+   transition: border-color 0.3s ease;
+   box-sizing: border-box;
+ }
+ 
+ .form-field input:focus, 
+ .form-field select:focus {
+   outline: none;
+   border-color: #225771;
+   background-color: #fff;
+ }
+ 
+ .form-field input.error, 
+ .form-field select.error {
+   border-color: #dc3545;
+   background-color: #fff5f5;
+ }
+ 
+ .form-field textarea {
+   width: 100%;
+   padding: 10px;
+   background-color: #F1F1F1;
+   border-radius: 5px;
+   border: 1px solid #ddd;
+   resize: vertical;
+   min-height: 80px;
+   transition: border-color 0.3s ease;
+   box-sizing: border-box;
+ }
+ 
+ .form-field textarea:focus {
+   outline: none;
+   border-color: #225771;
+   background-color: #fff;
+ }
+ 
+ .form-field textarea.error {
+   border-color: #dc3545;
+   background-color: #fff5f5;
+ }
+ 
+ .required {
+   color: #dc3545;
+   font-weight: bold;
+ }
+ 
+ .error-message {
+   color: #dc3545;
+   font-size: 12px;
+   margin-top: 4px;
+   display: block;
+ }
+ 
+ .form-actions {
+   display: flex;
+   gap: 12px;
+   margin-top: 24px;
+   justify-content: center;
+ }
+ 
+ .form-actions button {
+   width: 120px;
+   height: 40px;
+   padding: 8px 16px;
+   background: #225771;
+   color: #fff;
+   border: none;
+   border-radius: 5px;
+   cursor: pointer;
+   transition: all 0.3s ease;
+   font-size: 14px;
+   font-weight: 500;
+ }
+ 
+ .form-actions button:hover:not(:disabled) {
+   background: #FFDCE2;
+   color: #225771;
+ }
+ 
+   .form-actions button:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+  }
 
-.col-sm {
-  flex: 1;
-  margin-right: 8px;
-}
+  /* Row and column layout */
+  .row {
+    display: flex;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
 
-.col-sm:last-child {
-  margin-right: 0;
-}
+  .col-sm {
+    flex: 1;
+  }
 
-.modal-content label {
-  display: block;
-  margin-bottom: 2px;
-  color: #000;
-}
+  .col-sm label {
+    display: block;
+    margin-bottom: 4px;
+    color: #000;
+    font-weight: 500;
+  }
 
-.modal-content input, select {
-  width: 100%;
-  height: 40px;
-  padding: 10px;
-  background-color: #F1F1F1;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  transition: border-color 0.3s ease;
-}
+  .col-sm input,
+  .col-sm select,
+  .col-sm textarea {
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    background-color: #F1F1F1;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+  }
 
-.modal-content input:focus, select:focus {
-  outline: none;
-  border-color: #225771;
-  background-color: #fff;
-}
+  .col-sm input:focus,
+  .col-sm select:focus,
+  .col-sm textarea:focus {
+    outline: none;
+    border-color: #225771;
+    background-color: #fff;
+  }
 
-.modal-content input.error, select.error {
-  border-color: #dc3545;
-  background-color: #fff5f5;
-}
+  .col-sm input.error,
+  .col-sm select.error,
+  .col-sm textarea.error {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+  }
 
-.modal-content textarea {
-  width: 100%;
-  padding: 10px;
-  background-color: #F1F1F1;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  resize: vertical;
-  min-height: 80px;
-  transition: border-color 0.3s ease;
-}
+  .col-sm textarea {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+  }
 
-.modal-content textarea:focus {
-  outline: none;
-  border-color: #225771;
-  background-color: #fff;
-}
+  .col-sm button {
+    width: 120px;
+    height: 40px;
+    padding: 8px 16px;
+    background: #225771;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 12px;
+  }
 
-.modal-content textarea.error {
-  border-color: #dc3545;
-  background-color: #fff5f5;
-}
+  .col-sm button:hover:not(:disabled) {
+    background: #FFDCE2;
+    color: #225771;
+  }
 
-.required {
-  color: #dc3545;
-  font-weight: bold;
-}
+   .col-sm button:last-child {
+   margin-right: 0;
+ }
 
-.error-message {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 4px;
-  display: block;
-}
+ .field-info {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-top: 4px;
+ }
 
-.col-sm button {
-  width: 100px;
-  height: 40px;
-  padding: 8px;
-  background: #225771;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  margin-top: 26px;
-  margin-right: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+ .char-count {
+   font-size: 12px;
+   color: #666;
+   text-align: right;
+ }
 
-.col-sm button:hover:not(:disabled) {
-  background: #FFDCE2;
-  color: #225771;
-}
-
-.col-sm button:disabled {
-  background: #ccc;
-  color: #666;
-  cursor: not-allowed;
-}
+ .error-message {
+   color: #dc3545;
+   font-size: 12px;
+   margin-top: 4px;
+   display: block;
+ }
 
 
 </style>
