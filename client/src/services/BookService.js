@@ -8,6 +8,9 @@ class BookService {
     async getAll() {
         return await this.api.get("/");
     }
+    async search(query) {
+        return await this.api.get(`/search?name=${query}`);
+    }
 
     async get(id) {
         return (await this.api.get(`/${id}`)).data;

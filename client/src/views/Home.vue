@@ -24,7 +24,7 @@
       </div>
     </div>
     <div v-else>
-      <p>No book.</p>
+      <p>Không tìm thấy sách.</p>
     </div>
   </div>
 </div>
@@ -150,14 +150,31 @@ export default {
   created() {
     this.fetchBooks();
   },
+  watch: {
+    // Theo dõi sự thay đổi của query parameter 'search'
+    '$route.query.search': {
+      handler() {
+        this.fetchBooks();
+      },
+      immediate: true
+    }
+  },
 
   methods: {
-    fetchBooks() {
-      BookService.getAll()
-      .then((res) => {
-        this.books = res.data;
-      })
-      .catch((err) => console.log(err))
+    async fetchBooks() {
+        const searchQuery = this.$route.query.search;
+        try {
+            let res;
+            if (searchQuery) {
+                res = await BookService.search(searchQuery);
+            } else {
+                res = await BookService.getAll();
+            }
+            this.books = res.data;
+        } catch (err) {
+            console.error("Lỗi khi lấy danh sách sách:", err);
+            this.books = [];
+        }
     },
   }
 }

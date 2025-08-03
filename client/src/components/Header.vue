@@ -54,8 +54,8 @@
                 <a class="nav-link" href="#" :class="{ 'text-pink': isActive === 'news' }" @click="isActive = 'news'">Tin tức</a>
               </li>
             </ul>
-            <form class="d-flex">
-              <input class="form-control me-2" type="text" placeholder="Search" aria-label="Search">
+            <form class="d-flex" @submit.prevent="handleSearch">
+              <input v-model="searchQuery" class="form-control me-2" type="text" placeholder="Tìm kiếm sách" aria-label="Search">
               <button class="btn btn-outline-success" type="submit">Tìm kiếm</button>
             </form>
           </div>
@@ -175,6 +175,7 @@ export default {
       isLoggedIn: false, // Mặc định người dùng chưa đăng nhập
       showUserMenu: false, // Trạng thái hiển thị menu user
       user: null,
+      searchQuery: '',
     };
   },
   methods: {
@@ -189,6 +190,12 @@ export default {
       this.isLoggedIn = false;
       this.user = null;
       this.$router.push("/login");
+    },
+    handleSearch() {
+      if (this.searchQuery.trim()) {
+        // Chuyển hướng đến trang chủ với query parameter
+        this.$router.push({ path: '/', query: { search: this.searchQuery } });
+      }
     },
     viewProfile() {
       try {

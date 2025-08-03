@@ -6,32 +6,32 @@ const BookController = {
         console.log("Received request to fetch all books");
         try {
             const data = await BookModel.aggregate([
-            {
-                $lookup: {
-                    from: "nhaxuatban",
-                    localField: "maNXB",
-                    foreignField: "_id",
-                    as: "nxbDetails",
+                {
+                    $lookup: {
+                        from: "nhaxuatban",
+                        localField: "maNXB",
+                        foreignField: "_id",
+                        as: "nxbDetails",
+                    },
                 },
-            },
-            {
-                $unwind: "$nxbDetails",
-            },
-            {
-                $project: {
-                    maSach: 1,
-                    tenSach: 1,
-                    loaiSach: 1,
-                    tacGia: 1,
-                    "nxbDetails.tenNXB": 1,
-                    namXuatBan: 1,
-                    donGia: 1,
-                    soQuyen: 1,
-                    chiTiet: 1,
+                {
+                    $unwind: "$nxbDetails",
                 },
-            },
+                {
+                    $project: {
+                        maSach: 1,
+                        tenSach: 1,
+                        loaiSach: 1,
+                        tacGia: 1,
+                        "nxbDetails.tenNXB": 1,
+                        namXuatBan: 1,
+                        donGia: 1,
+                        soQuyen: 1,
+                        chiTiet: 1,
+                    },
+                },
             ]);
-            
+
             console.log(data);
             res.status(200).json(data);
         } catch (err) {
@@ -81,19 +81,73 @@ const BookController = {
         }
     },
     //Tìm kiếm sách theo tên
+    // findByName: async (req, res) => {
+    //     const { name } = req.query; // Lấy tên từ query parameters
+    //     try {
+    //         const data = await BookModel.find({
+    //             tenSach: { $regex: name, $options: "i" }, // Tìm kiếm không phân biệt hoa thường
+    //         }).populate("maNXB", "tenNXB"); // Nếu cần thông tin từ nhà xuất bản
+    //         if (data.length === 0) {
+    //             return res.status(404).json({ message: "Không tìm thấy sách nào." });
+    //         }
+    //         res.status(200).json(data);
+    //     } catch (err) {
+    //         console.error("Lỗi khi tìm kiếm sách:", err);
+    //         res.status(500).json({ message: `Không thể tìm kiếm sách: ${err.message}` });
+    //     }
+    // },
+
+    // Thay đổi hàm findByName
+    // src/controllers/BookController.js
     findByName: async (req, res) => {
         const { name } = req.query; // Lấy tên từ query parameters
+        if (!name) {
+            return res.status(400).json({ message: "Vui lòng cung cấp từ khóa tìm kiếm." });
+        }
         try {
-            const data = await BookModel.find({
-                tenSach: { $regex: name, $options: "i" }, // Tìm kiếm không phân biệt hoa thường
-            }).populate("maNXB", "tenNXB"); // Nếu cần thông tin từ nhà xuất bản
+            const data = await BookModel.aggregate([
+                {
+                    $lookup: {
+                        from: "nhaxuatban",
+                        localField: "maNXB",
+                        foreignField: "_id",
+                        as: "nxbDetails",
+                    },
+                },
+                {
+                    $unwind: "$nxbDetails",
+                },
+                {
+                    $match: {
+                        $or: [
+                            { tenSach: { $regex: name, $options: "i" } },
+                            { tacGia: { $regex: name, $options: "i" } },
+                            { "nxbDetails.tenNXB": { $regex: name, $options: "i" } },
+                        ],
+                    },
+                },
+                {
+                    $project: {
+                        maSach: 1,
+                        tenSach: 1,
+                        loaiSach: 1,
+                        tacGia: 1,
+                        "nxbDetails.tenNXB": 1,
+                        namXuatBan: 1,
+                        donGia: 1,
+                        soQuyen: 1,
+                        chiTiet: 1,
+                    },
+                },
+            ]);
+
             if (data.length === 0) {
-                return res.status(404).json({ message: "Không tìm thấy sách nào." });
+                return res.status(404).json({ message: "Không tìm thấy sách nào phù hợp." });
             }
             res.status(200).json(data);
         } catch (err) {
             console.error("Lỗi khi tìm kiếm sách:", err);
-            res.status(500).json({ message: `Không thể tìm kiếm sách: ${err.message}` });
+            res.status(500).json({ message: `Lỗi máy chủ khi tìm kiếm sách: ${err.message}` });
         }
     },
 
@@ -146,11 +200,11 @@ const BookController = {
             let nxb = await NXBModel.findOne({ tenNXB });
             if (!nxb) {
                 console.log("Nhà xuất bản không tồn tại, tạo mới.");
-                nxb = await NXBModel.create({ 
+                nxb = await NXBModel.create({
                     maNXB: `NXB${randomId}`,
                     tenNXB: tenNXB,
                     diaChi: "Địa chỉ chưa được cập nhật.",
-                 });
+                });
             }
 
             const newBook = await BookModel.create({
