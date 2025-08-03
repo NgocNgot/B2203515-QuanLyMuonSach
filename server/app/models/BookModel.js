@@ -29,7 +29,7 @@ const BookSchema = new mongoose.Schema({
         required: true,
     },
     chiTiet: {
-        hinhAnh: [String],
+        hinhAnh: [String], // Array of image URLs
         moTa: {
             type: String,
         }

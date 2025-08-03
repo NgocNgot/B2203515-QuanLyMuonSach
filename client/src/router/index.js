@@ -59,29 +59,29 @@ const router = createRouter({
     {
       path: "/admins",
       component: AdminLayout, // Bố cục riêng cho trang admin
-      meta: { showHeader: true, showFooter: false },
+      meta: { showHeader: false, showFooter: false },
       children: [
-      {
-        path: "books",
-        name: "ManageBook",
-        component: ManageBook,
-      },
-      {
-        path: "users",
-        name: "ManageUser",
-        component: ManageUser,
-      },
-      {
-        path: "borrows",
-        name: "ManageBorrow",
-        component: ManageBorrow,
-      },
-      {
-        path: "nxbs",
-        name: "ManageNXB",
-        component: ManageNXB,
-      },
-    ],
+        {
+          path: "books",
+          name: "ManageBook",
+          component: ManageBook,
+        },
+        {
+          path: "users",
+          name: "ManageUser",
+          component: ManageUser,
+        },
+        {
+          path: "borrows",
+          name: "ManageBorrow",
+          component: ManageBorrow,
+        },
+        {
+          path: "nxbs",
+          name: "ManageNXB",
+          component: ManageNXB,
+        },
+      ],
     },
 
   ]
